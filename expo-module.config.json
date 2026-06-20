@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["ExpoLogisticsScannerModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.logisticsscanner.ExpoLogisticsScannerModule"]
+  }
+}

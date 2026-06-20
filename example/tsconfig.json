@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-logistics-scanner": ["../src/index"],
+      "expo-logistics-scanner/*": ["../src/*"]
+    }
+  }
+}
