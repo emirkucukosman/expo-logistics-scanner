@@ -1,7 +1,7 @@
 {
   "name": "expo-logistics-scanner",
   "version": "0.1.0",
-  "description": "My new module",
+  "description": "High-performance barcode scanning library for React Native and Expo logistics applications",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -31,14 +31,14 @@
     "@babel/core": "^7.26.0",
     "@types/jest": "^29.2.1",
     "@types/react": "~19.1.1",
-    "babel-preset-expo": "~55.0.8",
+    "babel-preset-expo": "~56.0.15",
     "eslint": "~9.39.4",
     "eslint-config-universe": "^15.0.3",
     "expo": "^56.0.11",
     "jest": "^29.7.0",
-    "jest-expo": "~55.0.9",
+    "jest-expo": "~56.0.5",
     "prettier": "^3.0.0",
-    "react-native": "0.82.1",
+    "react-native": "0.85.3",
     "typescript": "^5.9.2"
   },
   "jest": {
@@ -49,6 +49,7 @@
   },
   "peerDependencies": {
     "expo": "*",
+    "expo-modules-core": "*",
     "react": "*",
     "react-native": "*"
   }

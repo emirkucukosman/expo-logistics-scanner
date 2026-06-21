@@ -16,3 +16,17 @@ android {
     abortOnError false
   }
 }
+
+configurations.configureEach {
+  resolutionStrategy.force "com.google.guava:listenablefuture:1.0"
+}
+
+dependencies {
+  def camerax_version = "1.6.0"
+  implementation "androidx.camera:camera-core:${camerax_version}"
+  implementation "androidx.camera:camera-camera2:${camerax_version}"
+  implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+  implementation "androidx.camera:camera-view:${camerax_version}"
+  implementation "com.google.mlkit:barcode-scanning:17.3.0"
+  implementation "androidx.appcompat:appcompat:1.7.1"
+}

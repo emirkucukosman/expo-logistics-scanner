@@ -2,25 +2,26 @@ package expo.modules.logisticsscanner
 
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.logisticsscanner.scanner.ScannerView
 
 class ExpoLogisticsScannerModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("ExpoLogisticsScanner")
 
-    Events("onChange")
+    View(ScannerView::class) {
+      Events("onScan")
 
-    Constant("PI") {
-      Math.PI
-    }
+      Prop("torch") { view: ScannerView, enabled: Boolean ->
+        view.setTorchEnabled(enabled)
+      }
 
-    Function("hello") {
-      "Hello world! 👋"
-    }
+      OnViewDidUpdateProps { view ->
+        view.startScanning()
+      }
 
-    AsyncFunction("setValueAsync") { value: String ->
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
+      OnViewDestroys { view ->
+        view.stopScanning()
+      }
     }
   }
 }

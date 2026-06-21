@@ -4,20 +4,12 @@ public class ExpoLogisticsScannerModule: Module {
   public func definition() -> ModuleDefinition {
     Name("ExpoLogisticsScanner")
 
-    Events("onChange")
+    View(ScannerView.self) {
+      Events("onScan")
 
-    Constant("PI") {
-      Double.pi
-    }
-
-    Function("hello") {
-      return "Hello world! 👋"
-    }
-
-    AsyncFunction("setValueAsync") { (value: String) in
-      self.sendEvent("onChange", [
-        "value": value
-      ])
+      Prop("torch") { (view: ScannerView, enabled: Bool) in
+        view.setTorchEnabled(enabled)
+      }
     }
   }
 }
