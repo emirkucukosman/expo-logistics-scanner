@@ -10,6 +10,10 @@ public class ExpoLogisticsScannerModule: Module {
       Prop("torch") { (view: ScannerView, enabled: Bool) in
         view.setTorchEnabled(enabled)
       }
+
+      OnViewDidUpdateProps { view in
+        view.startScanning()
+      }
     }
   }
 }

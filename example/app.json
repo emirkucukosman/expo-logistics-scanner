@@ -8,10 +8,16 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.logisticsscanner.example"
+      "bundleIdentifier": "expo.modules.logisticsscanner.example",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera access is required to scan barcodes."
+      },
+      "appleTeamId": "P5GE34PCWL"
     },
     "android": {
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "CAMERA"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -12,6 +12,11 @@ export default function App() {
 
   useEffect(() => {
     async function requestCameraPermission() {
+      if (Platform.OS === 'ios') {
+        setPermissionState('granted');
+        return;
+      }
+
       if (Platform.OS !== 'android') {
         setPermissionState('denied');
         return;

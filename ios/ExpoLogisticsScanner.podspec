@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name           = 'ExpoLogisticsScanner'
   s.version        = '1.0.0'
-  s.summary        = 'A sample project summary'
-  s.description    = 'A sample project description'
-  s.author         = ''
+  s.summary        = 'High-performance barcode scanning for Expo logistics apps'
+  s.description    = 'Native AVFoundation and Vision-based CODE_128 scanning for React Native and Expo.'
+  s.author         = 'Emir Kucukosman'
   s.homepage       = 'https://docs.expo.dev/modules/'
   s.platforms      = {
     :ios => '16.4',
