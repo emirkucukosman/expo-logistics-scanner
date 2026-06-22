@@ -6,12 +6,17 @@ private let code128Format = "CODE_128"
 
 final class BarcodeAnalyzer: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
   private let onScan: (ScanResult) -> Void
+  private let onFailure: (ScanError) -> Void
   private let analysisQueue = DispatchQueue(label: "expo.logistics.scanner.barcode-analysis")
   private var isProcessing = false
   private let processingLock = NSLock()
 
-  init(onScan: @escaping (ScanResult) -> Void) {
+  init(
+    onScan: @escaping (ScanResult) -> Void,
+    onFailure: @escaping (ScanError) -> Void = { _ in }
+  ) {
     self.onScan = onScan
+    self.onFailure = onFailure
   }
 
   func makeVideoOutput() -> AVCaptureVideoDataOutput {
@@ -43,6 +48,7 @@ final class BarcodeAnalyzer: NSObject, AVCaptureVideoDataOutputSampleBufferDeleg
       processingLock.unlock()
     }
 
+    let decodeStartedAt = Int64(Date().timeIntervalSince1970 * 1000)
     let request = VNDetectBarcodesRequest()
     request.symbologies = [.code128]
 
@@ -55,7 +61,14 @@ final class BarcodeAnalyzer: NSObject, AVCaptureVideoDataOutputSampleBufferDeleg
 
     do {
       try handler.perform([request])
-    } catch {
+    } catch let visionError {
+      let scanError = ScanError(
+        code: ScanError.decoderFailure,
+        message: visionError.localizedDescription
+      )
+      DispatchQueue.main.async {
+        self.onFailure(scanError)
+      }
       return
     }
 
@@ -64,6 +77,9 @@ final class BarcodeAnalyzer: NSObject, AVCaptureVideoDataOutputSampleBufferDeleg
     else {
       return
     }
+
+    let decodeLatencyMs = Int64(Date().timeIntervalSince1970 * 1000) - decodeStartedAt
+    ScannerMetrics.recordDecodeLatency(decodeLatencyMs)
 
     let result = ScanResult(
       value: payload,

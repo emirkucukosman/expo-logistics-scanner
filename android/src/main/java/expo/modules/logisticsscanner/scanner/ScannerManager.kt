@@ -17,15 +17,16 @@ class ScannerManager(
   )
 
   fun start(onScan: (ScanResult) -> Unit) {
-    start(onScan, onStarted = {}, onFailed = {})
+    start(onScan, onStarted = {}, onFailed = {}, onError = {})
   }
 
   fun start(
     onScan: (ScanResult) -> Unit,
     onStarted: () -> Unit,
-    onFailed: () -> Unit,
+    onFailed: (ScanError) -> Unit,
+    onError: (ScanError) -> Unit,
   ) {
-    provider.start(onScan, onStarted, onFailed)
+    provider.start(onScan, onStarted, onFailed, onError)
   }
 
   fun stop() {

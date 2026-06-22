@@ -19,6 +19,7 @@ internal object ScanFormats {
 
 class BarcodeAnalyzer(
   private val onScan: (ScanResult) -> Unit,
+  private val onFailure: (ScanError) -> Unit = {},
 ) : ImageAnalysis.Analyzer {
   private val isProcessing = AtomicBoolean(false)
   private val mainHandler = Handler(Looper.getMainLooper())
@@ -35,6 +36,7 @@ class BarcodeAnalyzer(
       return
     }
 
+    val decodeStartedAt = System.currentTimeMillis()
     val mediaImage = imageProxy.image
     if (mediaImage == null) {
       isProcessing.set(false)
@@ -53,6 +55,9 @@ class BarcodeAnalyzer(
         if (barcode != null) {
           val value = barcode.rawValue
           if (value != null) {
+            val decodeLatencyMs = System.currentTimeMillis() - decodeStartedAt
+            ScannerMetrics.recordDecodeLatency(decodeLatencyMs)
+
             val result = ScanResult(
               value = value,
               format = "CODE_128",
@@ -64,6 +69,14 @@ class BarcodeAnalyzer(
       }
       .addOnFailureListener { error ->
         Log.w(TAG, "Barcode analysis failed", error)
+        mainHandler.post {
+          onFailure(
+            ScanError(
+              code = ScanError.DECODER_FAILURE,
+              message = error.message ?: "Barcode analysis failed",
+            ),
+          )
+        }
       }
       .addOnCompleteListener {
         isProcessing.set(false)

@@ -6,7 +6,8 @@ interface ScannerProvider {
   fun start(
     onScan: (ScanResult) -> Unit,
     onStarted: () -> Unit = {},
-    onFailed: () -> Unit = {},
+    onFailed: (ScanError) -> Unit = {},
+    onError: (ScanError) -> Unit = {},
   )
   fun stop()
   fun setTorch(enabled: Boolean)

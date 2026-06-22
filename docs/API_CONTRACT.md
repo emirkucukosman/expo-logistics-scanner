@@ -53,8 +53,6 @@ Supported future values:
 
 duplicateTimeout
 
-Planned Milestone 3.
-
 number
 
 Milliseconds.
@@ -72,6 +70,19 @@ Default:
 0
 
 Disabled.
+
+onError
+
+(error: ScannerError) => void
+
+Called when the scanner encounters a recoverable error.
+
+ScannerError:
+
+interface ScannerError {
+  code: 'permission_denied' | 'camera_unavailable' | 'decoder_failure' | 'interrupted'
+  message: string
+}
 
 roi
 

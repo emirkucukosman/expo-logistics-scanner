@@ -18,6 +18,7 @@ class ScannerView(context: Context, appContext: AppContext) :
   ExpoView(context, appContext),
   CameraViewInterface {
   private val onScan by EventDispatcher()
+  private val onError by EventDispatcher()
   private val previewView = PreviewView(context).also {
     it.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     it.scaleType = PreviewView.ScaleType.FILL_CENTER
@@ -31,6 +32,9 @@ class ScannerView(context: Context, appContext: AppContext) :
   private var isScanning = false
   private var isStarting = false
   private var torchEnabled = false
+  private var duplicateTimeoutMs = 0L
+  private var lastScanValue: String? = null
+  private var lastScanEmitTimeMs = 0L
   private var previewSurfaceTexture: SurfaceTexture? = null
 
   override fun setPreviewTexture(surfaceTexture: SurfaceTexture?) {
@@ -84,6 +88,10 @@ class ScannerView(context: Context, appContext: AppContext) :
     post { tryStartScanning() }
   }
 
+  fun setDuplicateTimeout(timeoutMs: Int) {
+    duplicateTimeoutMs = timeoutMs.toLong().coerceAtLeast(0)
+  }
+
   private fun tryStartScanning() {
     if (isScanning || isStarting || !isAttachedToWindow || width == 0 || height == 0) {
       return
@@ -107,25 +115,48 @@ class ScannerView(context: Context, appContext: AppContext) :
     isStarting = true
 
     manager.start(
-      onScan = { result ->
-        onScan(
-          mapOf(
-            "value" to result.value,
-            "format" to result.format,
-            "timestamp" to result.timestamp,
-          ),
-        )
-      },
+      onScan = { result -> handleScan(result) },
       onStarted = {
         isStarting = false
         isScanning = true
         manager.setTorch(torchEnabled)
       },
-      onFailed = {
-        isStarting = false
-        isScanning = false
-      },
+      onFailed = { error -> dispatchFatalError(error) },
+      onError = { error -> dispatchRuntimeError(error) },
     )
+  }
+
+  private fun handleScan(result: ScanResult) {
+    val now = System.currentTimeMillis()
+    if (
+      duplicateTimeoutMs > 0 &&
+      result.value == lastScanValue &&
+      now - lastScanEmitTimeMs < duplicateTimeoutMs
+    ) {
+      return
+    }
+
+    lastScanValue = result.value
+    lastScanEmitTimeMs = now
+    ScannerMetrics.incrementScanCount()
+
+    onScan(
+      mapOf(
+        "value" to result.value,
+        "format" to result.format,
+        "timestamp" to result.timestamp,
+      ),
+    )
+  }
+
+  private fun dispatchFatalError(error: ScanError) {
+    isStarting = false
+    isScanning = false
+    onError(error.toMap())
+  }
+
+  private fun dispatchRuntimeError(error: ScanError) {
+    onError(error.toMap())
   }
 
   fun stopScanning() {

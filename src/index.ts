@@ -1,2 +1,2 @@
 export { ScannerView } from './ScannerView';
-export type { ScanResult, ScannerViewProps } from './types';
+export type { ScanResult, ScannerError, ScannerErrorCode, ScannerViewProps } from './types';

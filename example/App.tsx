@@ -1,4 +1,4 @@
-import { ScannerView, ScanResult } from 'expo-logistics-scanner';
+import { ScannerView, ScanResult, ScannerError } from 'expo-logistics-scanner';
 import { useCallback, useEffect, useState } from 'react';
 import { Button, PermissionsAndroid, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ export default function App() {
   const [permissionState, setPermissionState] = useState<PermissionState>('pending');
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [lastScan, setLastScan] = useState<ScanResult | null>(null);
+  const [lastError, setLastError] = useState<ScannerError | null>(null);
 
   useEffect(() => {
     async function requestCameraPermission() {
@@ -37,6 +38,11 @@ export default function App() {
 
   const handleScan = useCallback((result: ScanResult) => {
     setLastScan(result);
+    setLastError(null);
+  }, []);
+
+  const handleError = useCallback((error: ScannerError) => {
+    setLastError(error);
   }, []);
 
   if (permissionState === 'pending') {
@@ -57,7 +63,14 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScannerView key="scanner" style={styles.scanner} torch={torchEnabled} onScan={handleScan} />
+      <ScannerView
+        key="scanner"
+        style={styles.scanner}
+        torch={torchEnabled}
+        duplicateTimeout={750}
+        onScan={handleScan}
+        onError={handleError}
+      />
       <View style={styles.controls}>
         <Button
           title={torchEnabled ? 'Turn torch off' : 'Turn torch on'}
@@ -69,6 +82,14 @@ export default function App() {
           <Text style={styles.meta}>
             {lastScan.format} · {new Date(lastScan.timestamp).toLocaleTimeString()}
           </Text>
+        ) : null}
+        {lastError ? (
+          <>
+            <Text style={styles.label}>Last error</Text>
+            <Text style={styles.error}>
+              {lastError.code}: {lastError.message}
+            </Text>
+          </>
         ) : null}
       </View>
     </SafeAreaView>
@@ -84,6 +105,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#111',
     gap: 8,
     padding: 16,
+  },
+  error: {
+    color: '#f87171',
+    fontSize: 14,
   },
   label: {
     color: '#aaa',

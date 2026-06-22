@@ -13,3 +13,20 @@ struct ScanResult {
     ]
   }
 }
+
+struct ScanError {
+  let code: String
+  let message: String
+
+  func toDictionary() -> [String: String] {
+    [
+      "code": code,
+      "message": message,
+    ]
+  }
+
+  static let permissionDenied = "permission_denied"
+  static let cameraUnavailable = "camera_unavailable"
+  static let decoderFailure = "decoder_failure"
+  static let interrupted = "interrupted"
+}

@@ -4,6 +4,16 @@
   "description": "High-performance barcode scanning library for React Native and Expo logistics applications",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./debug": {
+      "types": "./build/debug.d.ts",
+      "default": "./build/debug.js"
+    }
+  },
   "scripts": {
     "build": "node internal/module_scripts/build.js",
     "clean": "node internal/module_scripts/clean.js",

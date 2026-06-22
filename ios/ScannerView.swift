@@ -3,12 +3,16 @@ import UIKit
 
 class ScannerView: ExpoView {
   let onScan = EventDispatcher()
+  let onError = EventDispatcher()
 
   private let previewContainer = UIView()
   private var scannerManager: ScannerManager?
   private var isScanning = false
   private var isStarting = false
   private var torchEnabled = false
+  private var duplicateTimeoutMs: Int64 = 0
+  private var lastScanValue: String?
+  private var lastScanEmitTimeMs: Int64 = 0
 
   deinit {
     scannerManager?.stop()
@@ -52,6 +56,10 @@ class ScannerView: ExpoView {
     scannerManager?.setTorch(enabled: enabled)
   }
 
+  func setDuplicateTimeout(_ timeoutMs: Int) {
+    duplicateTimeoutMs = Int64(max(timeoutMs, 0))
+  }
+
   override func layoutSubviews() {
     super.layoutSubviews()
     scannerManager?.updatePreviewFrame(previewContainer.bounds)
@@ -88,7 +96,7 @@ class ScannerView: ExpoView {
 
     manager.start(
       onScan: { [weak self] result in
-        self?.onScan(result.toDictionary())
+        self?.handleScan(result)
       },
       onStarted: { [weak self] in
         guard let self else {
@@ -98,10 +106,37 @@ class ScannerView: ExpoView {
         self.isScanning = true
         self.scannerManager?.setTorch(enabled: self.torchEnabled)
       },
-      onFailed: { [weak self] in
-        self?.isStarting = false
-        self?.isScanning = false
+      onFailed: { [weak self] error in
+        self?.dispatchFatalError(error)
+      },
+      onError: { [weak self] error in
+        self?.dispatchRuntimeError(error)
       }
     )
+  }
+
+  private func handleScan(_ result: ScanResult) {
+    let now = Int64(Date().timeIntervalSince1970 * 1000)
+    if duplicateTimeoutMs > 0,
+       result.value == lastScanValue,
+       now - lastScanEmitTimeMs < duplicateTimeoutMs
+    {
+      return
+    }
+
+    lastScanValue = result.value
+    lastScanEmitTimeMs = now
+    ScannerMetrics.incrementScanCount()
+    onScan(result.toDictionary())
+  }
+
+  private func dispatchFatalError(_ error: ScanError) {
+    isStarting = false
+    isScanning = false
+    onError(error.toDictionary())
+  }
+
+  private func dispatchRuntimeError(_ error: ScanError) {
+    onError(error.toDictionary())
   }
 }
